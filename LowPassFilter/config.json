@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    {
+      "name": "LPFBiquadPlugin",
+      "filename": "LowPassFilter.dll",
+      "cutoff_frequency": 500.0,
+      "q_factor": 0.707
+    }
+  ]
+}
