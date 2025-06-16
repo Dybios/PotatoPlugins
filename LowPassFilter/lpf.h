@@ -4,9 +4,8 @@
 #include <string>
 #include "IPotatoPlugin.h"
 
-#include <memory>
 #include <filesystem>
-#include "json.hpp" // For reading config file
+#include "json.hpp"
 #include <fstream>
 
 #include "BiquadFilters.h"
@@ -20,6 +19,12 @@
 const std::string CONFIG_FILE = "config.json";
 const std::string PLUGIN_NAME = "LPFBiquadPlugin";
 
+struct Parameter {
+    const char* parameterName;
+    float parameterVal;
+};
+
+
 class LPFBiquadPlugin : public IPotatoPlugin {
 public:
     LPFBiquadPlugin();
@@ -27,7 +32,7 @@ public:
 
     // These two functions must be kept as is for APO to interact & process the plugin. 
     PluginStatus process(ProcessContext& context) override;
-    std::string getName() const override { return "LPFBiquadPlugin"; }
+    std::string getName() const override { return PLUGIN_NAME; }
 
     // ...You can define your own methods and fields from here on as needed for processing.
 
@@ -35,8 +40,10 @@ private:
     float sampleRate = 44100.0f; // TODO: Get this dynamically from the audio stream playing
     std::unique_ptr<BiquadFilter> filter;
 
-    float cutoffFreqVal = 100.0f;
-    float qFactorVal = 0.707f;
+    Parameter paramTable[2] = {
+        { "cutoff_frequency", 0.0f },
+        { "q_factor", 0.0f },
+    };
 
-    int setParamFromConfig();
+    int setParamsFromConfig();
 };

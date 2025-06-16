@@ -1,8 +1,7 @@
 #include "pch.h"
 
-#include <mutex>
-#include "lpf.h"
 #include <shlobj.h>
+#include "lpf.h"
 
 LPFBiquadPlugin::LPFBiquadPlugin() {
 	// Use this constructor to initialize any parameters that would be needed during process call.
@@ -10,8 +9,10 @@ LPFBiquadPlugin::LPFBiquadPlugin() {
     filter = std::make_unique<BiquadFilter>(sampleRate);
 
     // Load parameters from config file
-    setParamFromConfig();
-    filter->setLowPass(cutoffFreqVal, qFactorVal);    
+    int ret = setParamsFromConfig();
+    if (!ret) {
+        filter->setLowPass(paramTable[0].parameterVal, paramTable[1].parameterVal);
+    }
 }
 
 LPFBiquadPlugin::~LPFBiquadPlugin() {
@@ -32,9 +33,14 @@ PluginStatus LPFBiquadPlugin::process(ProcessContext& context) {
 	return PluginStatus::CONTINUE;
 }
 
-int LPFBiquadPlugin::setParamFromConfig() {
+int LPFBiquadPlugin::setParamsFromConfig() {
 	int ret = 0;
-    std::filesystem::path configFilePath = "C:\\Users\\Public\\PotatoEffects\\config.json";
+    PWSTR pszPath = NULL;
+    HRESULT hr = SHGetKnownFolderPath(FOLDERID_Public, 0, NULL, &pszPath);
+    std::wstring wSysPublicPath(pszPath);
+    std::string sysPublicPath(wSysPublicPath.begin(), wSysPublicPath.end());
+    sysPublicPath += "\\PotatoEffects";
+    std::filesystem::path configFilePath = sysPublicPath + "\\" + CONFIG_FILE;
     std::string name;
 
     try {
@@ -54,19 +60,12 @@ int LPFBiquadPlugin::setParamFromConfig() {
                 if (pluginEntry.contains("name") && pluginEntry["name"].is_string()) {
                     name = pluginEntry["name"].get<std::string>();
                 }
-                else {
-                    continue;
-                }
 
                 if (!name.compare(PLUGIN_NAME)) {
-                    // Safely read "cutoff_freq"
-                    if (pluginEntry.contains("cutoff_frequency") && pluginEntry["cutoff_frequency"].is_number()) {
-                        cutoffFreqVal = pluginEntry["cutoff_frequency"].get<float>();
-                    }
-
-                    // Safely read "q_factor"
-                    if (pluginEntry.contains("q_factor") && pluginEntry["q_factor"].is_number()) {
-                        qFactorVal = pluginEntry["q_factor"].get<float>();
+                    for (auto& param : paramTable) {
+                        if (pluginEntry.contains(param.parameterName) && pluginEntry[param.parameterName].is_number()) {
+                            param.parameterVal = pluginEntry[param.parameterName].get<float>();
+                        }
                     }
                 }
             }
