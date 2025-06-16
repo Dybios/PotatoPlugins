@@ -144,13 +144,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BiquadFilters.h" />
-    <ClInclude Include="configWatcher.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="lpf.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="configWatcher.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="lpf.cpp" />
     <ClCompile Include="pch.cpp">
