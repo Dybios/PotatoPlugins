@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include "lpf.h"
+#include <shlobj.h>
 
 LPFBiquadPlugin::LPFBiquadPlugin() {
 	// Use this constructor to initialize any parameters that would be needed during process call.
@@ -10,26 +11,16 @@ LPFBiquadPlugin::LPFBiquadPlugin() {
 
     // Load parameters from config file
     setParamFromConfig();
-
-    watcher = std::make_unique<ConfigWatcher>(L".", L"config.json");
-    watcher->SetCallback([this]() {
-        setParamFromConfig();
-        });
-
-    watcher->Start();
-
-	//filter->setLowPass(cutoffFreqVal, qFactorVal);
+    filter->setLowPass(cutoffFreqVal, qFactorVal);    
 }
 
 LPFBiquadPlugin::~LPFBiquadPlugin() {
 	// Use this to cleanup any parameters that would be needed when DLL is unloaded.
 	// This can be empty if none is needed.
 	filter.release();
-    watcher->Stop(); // Signal the watcher to stop its thread
 }
 
 PluginStatus LPFBiquadPlugin::process(ProcessContext& context) {
-	//const std::lock_guard<std::mutex> lock(paramMutex);
 	for (unsigned i = 0; i < context.validFrameCount; i++)
 	{
 		for (unsigned j = 0; j < context.numChannels; j++)
@@ -43,8 +34,7 @@ PluginStatus LPFBiquadPlugin::process(ProcessContext& context) {
 
 int LPFBiquadPlugin::setParamFromConfig() {
 	int ret = 0;
-	//const std::lock_guard<std::mutex> lock(paramMutex);
-    std::filesystem::path configFilePath = ".\\" + CONFIG_FILE;
+    std::filesystem::path configFilePath = "C:\\Users\\Public\\PotatoEffects\\config.json";
     std::string name;
 
     try {
@@ -55,6 +45,7 @@ int LPFBiquadPlugin::setParamFromConfig() {
 
         nlohmann::json configJson;
         configFile >> configJson; // Parse the JSON from the file
+        configFile.close();
 
         // Check if the "plugins" array exists and is an array
         if (configJson.contains("plugins") && configJson["plugins"].is_array()) {
@@ -90,8 +81,6 @@ int LPFBiquadPlugin::setParamFromConfig() {
     catch (const std::exception& e) {
         return 1;
     }
-
-	filter->setLowPass(cutoffFreqVal, qFactorVal);
 	return ret;
 }
 

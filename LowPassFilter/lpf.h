@@ -10,7 +10,6 @@
 #include <fstream>
 
 #include "BiquadFilters.h"
-#include "configWatcher.h"
 
 #ifdef LOWPASSFILTER_EXPORTS
 #define LOWPASSFILTER_API __declspec(dllexport)
@@ -35,11 +34,9 @@ public:
 private:
     float sampleRate = 44100.0f; // TODO: Get this dynamically from the audio stream playing
     std::unique_ptr<BiquadFilter> filter;
-    std::unique_ptr<ConfigWatcher> watcher;
-    std::mutex paramMutex;
 
-    float cutoffFreqVal = 0.0f;
-    float qFactorVal = 0.0f;
+    float cutoffFreqVal = 100.0f;
+    float qFactorVal = 0.707f;
 
     int setParamFromConfig();
 };
