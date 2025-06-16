@@ -24,7 +24,6 @@ struct Parameter {
     float parameterVal;
 };
 
-
 class LPFBiquadPlugin : public IPotatoPlugin {
 public:
     LPFBiquadPlugin();
@@ -34,16 +33,15 @@ public:
     PluginStatus process(ProcessContext& context) override;
     std::string getName() const override { return PLUGIN_NAME; }
 
-    // ...You can define your own methods and fields from here on as needed for processing.
+    // Set all processing parameters with their default values here (only float for now)
+    Parameter parameterTable[2] = {
+        { "cutoff_frequency", 0.0f },
+        { "q_factor", 0.0f },
+    };
 
 private:
     float sampleRate = 44100.0f; // TODO: Get this dynamically from the audio stream playing
     std::unique_ptr<BiquadFilter> filter;
-
-    Parameter paramTable[2] = {
-        { "cutoff_frequency", 0.0f },
-        { "q_factor", 0.0f },
-    };
 
     int setParamsFromConfig();
 };

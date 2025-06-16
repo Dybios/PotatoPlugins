@@ -11,7 +11,7 @@ LPFBiquadPlugin::LPFBiquadPlugin() {
     // Load parameters from config file
     int ret = setParamsFromConfig();
     if (!ret) {
-        filter->setLowPass(paramTable[0].parameterVal, paramTable[1].parameterVal);
+        filter->setLowPass(parameterTable[0].parameterVal, parameterTable[1].parameterVal);
     }
 }
 
@@ -33,6 +33,8 @@ PluginStatus LPFBiquadPlugin::process(ProcessContext& context) {
 	return PluginStatus::CONTINUE;
 }
 
+// This reads the config.json and sets all defined parameters. 
+// No need to modify this unless absolutely necessary.
 int LPFBiquadPlugin::setParamsFromConfig() {
 	int ret = 0;
     PWSTR pszPath = NULL;
@@ -50,21 +52,21 @@ int LPFBiquadPlugin::setParamsFromConfig() {
         }
 
         nlohmann::json configJson;
-        configFile >> configJson; // Parse the JSON from the file
+        configFile >> configJson;
         configFile.close();
 
         // Check if the "plugins" array exists and is an array
         if (configJson.contains("plugins") && configJson["plugins"].is_array()) {
             for (const auto& pluginEntry : configJson["plugins"]) {
-                // Safely read "name"
                 if (pluginEntry.contains("name") && pluginEntry["name"].is_string()) {
                     name = pluginEntry["name"].get<std::string>();
                 }
 
                 if (!name.compare(PLUGIN_NAME)) {
-                    for (auto& param : paramTable) {
-                        if (pluginEntry.contains(param.parameterName) && pluginEntry[param.parameterName].is_number()) {
-                            param.parameterVal = pluginEntry[param.parameterName].get<float>();
+                    // If this plugin found in config, retreive and set the values.
+                    for (auto& parameter : parameterTable) {
+                        if (pluginEntry.contains(parameter.parameterName) && pluginEntry[parameter.parameterName].is_number()) {
+                            parameter.parameterVal = pluginEntry[parameter.parameterName].get<float>();
                         }
                     }
                 }
